@@ -6,15 +6,16 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.Mvc;
 using WebApiAngularJsUploader.Models;
 using WebApiAngularJsUploader.Photo;
 
 namespace WebApiAngularJsUploader.Controllers
 {
-    [RoutePrefix("api/photo")]
+    [System.Web.Mvc.RoutePrefix("api/photo")]
     public class PhotoController : ApiController
     {
-        private IPhotoManager photoManager;
+        private readonly IPhotoManager _photoManager;
 
         public PhotoController()
             : this(new LocalPhotoManager(HttpRuntime.AppDomainAppPath + @"\Album"))
@@ -23,13 +24,13 @@ namespace WebApiAngularJsUploader.Controllers
 
         public PhotoController(IPhotoManager photoManager)
         {
-            this.photoManager = photoManager;
+            this._photoManager = photoManager;
         }
 
         // GET: api/Photo
         public async Task<IHttpActionResult> Get()
         {
-            var results = await photoManager.Get();
+            var results = await _photoManager.Get();
             return Ok(new { photos = results });
         }
 
@@ -44,7 +45,7 @@ namespace WebApiAngularJsUploader.Controllers
 
             try
             {
-                var photos = await photoManager.Add(Request);
+                var photos = await _photoManager.Add(Request);
                 return Ok(new { Message = "Photos uploaded ok", Photos = photos });
             }
             catch (Exception ex)
@@ -59,12 +60,12 @@ namespace WebApiAngularJsUploader.Controllers
         [Route("{fileName}")]
         public async Task<IHttpActionResult> Delete(string fileName)
         {         
-            if (!this.photoManager.FileExists(fileName))
+            if (!this._photoManager.FileExists(fileName))
             {
                 return NotFound();
             }
 
-           var result = await this.photoManager.Delete(fileName);
+           var result = await this._photoManager.Delete(fileName);
 
            if (result.Successful)
            {
